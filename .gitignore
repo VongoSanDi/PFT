@@ -29,6 +29,11 @@ client/*.njsproj
 client/*.sln
 client/*.sw?
 
+server/.vs/
 server/bin
 server/obj
 server/.idea
+server/.env
+server/*.env
+server/.env.*
+
