@@ -52,5 +52,6 @@ public class EntriesController : ControllerBase
             Date = entry.Date,
             Description = entry.Description,
             TypeId = entry.TypeId,
+            CategoryId = entry.CategoryId,
         };
 }

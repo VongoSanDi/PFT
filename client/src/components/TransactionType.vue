@@ -1,8 +1,16 @@
 <script setup lang="ts">
+import type { Entry, EntryCategory, EntryType } from '@/types/types';
 import { ref } from 'vue';
+import EntryTable from './EntryTable.vue';
 import StatCard from './StatCard.vue';
+import { mdiAccount } from '@mdi/js'
 
 const emit = defineEmits(['toggleDialog'])
+const props = defineProps<{
+  entries: Entry[],
+  types: EntryType[],
+  categories: EntryCategory[]
+}>()
 
 const transactionType = ref("week")
 </script>
@@ -31,8 +39,14 @@ const transactionType = ref("week")
         <StatCard title="Expense" :loading="false" color="red-lighten-1" />
       </v-col>
       <v-col cols="12">
-        <StatCard title="Last transactions" :loading="false" :isLastEntryCard="true"
-          @openEntryManagement="emit('toggleDialog')" />
+        <v-card>
+          <template #append>
+            <v-btn @click="emit('toggleDialog')">
+              <v-icon :icon="mdiAccount"></v-icon>
+            </v-btn>
+          </template>
+          <entry-table :entries="entries" />
+        </v-card>
       </v-col>
     </v-row>
   </v-container>

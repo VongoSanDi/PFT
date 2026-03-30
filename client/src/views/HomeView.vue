@@ -1,47 +1,86 @@
 <script setup lang="ts">
 import TransactionManagementModal from '@/components/TransactionManagementModal.vue'
 import TransactionType from '@/components/TransactionType.vue'
+import { useCategories } from '@/composables/apis/useCategories'
+import { useEntries } from '@/composables/apis/useEntries'
+import { useTypes } from '@/composables/apis/useTypes'
 import type { CreateEntry, Entry } from '@/types/types'
-import { useFetch } from '@vueuse/core'
-import { ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
+
+const { create, fetchAll: loadEntries, entries } = useEntries();
+const { fetchAll: loadTypes, types, loading: loadingTypes } = useTypes()
+const { fetchAll: loadCategories, categories, loading: loadingCategories } = useCategories()
 
 const toggleDialog = ref(false)
 
-const entry = ref<CreateEntry>()
+const entry = ref<Entry>({
+  id: 0,
+  type: null,
+  typeId: 0,
+  category: null,
+  categoryId: 0,
+  amount: 0,
+  date: new Date(),
+  description: ""
+})
 
 const handleToggleDialog = () => {
   toggleDialog.value = true
 }
 
-const handleDialogClosed = () => {
-  console.log("Closed")
-  toggleDialog.value = false
+/**
+ *
+ */
+const handleDialogSaved = async () => {
+  try {
+    const payload: CreateEntry = {
+      amount: entry.value.amount,
+      description: entry.value.description,
+      date: entry.value.date,
+      typeId: entry.value.type!.id,
+      categoryId: entry.value.category!.id
+    };
+
+    await create(payload)
+  } catch (err) {
+    console.error('err', err);
+  } finally {
+    await loadEntries()
+    toggleDialog.value = false
+  }
 }
 
-const handleDialogSaved = async (e: Entry) => {
-  // TODO the save
-  console.log('SAVE HOMEVIEW', e)
-  entry.value = {
-    amount: e.amount,
-    description: e.description,
-    date: e.date,
-    typeId: e.type!.id,
-    categoryId: e.category!.id
-  };
+onMounted(async () => {
+  await Promise.all([loadTypes(), loadCategories(), fetchEntries()])
 
-  await execute()
-  handleDialogClosed()
-  console.log('DATA', data)
+  //
+  // if (types.value.length > 0) {
+  //   console.log('types', types.value)
+  //   entry.value.type = types.value[0]!
+  // }
+})
+
+const fetchEntries = async () => {
+  await loadEntries()
+  if (types.value.length > 0) {
+    entries.value = entries.value.map((e) => ({
+      ...e,
+      type: types.value.find(t => t.id === e.typeId) ?? null,
+      category: categories.value.find(c => c.id === e.categoryId) ?? null,
+    }))
+  }
 }
 
-const { data, execute } = useFetch<Entry>(`${import.meta.env.VITE_SERVER_URL}api/entries`, { immediate: false }).post(entry).json()
-
+const isLoadingModal = computed(() => {
+  return loadingTypes.value || loadingCategories.value
+})
 
 </script>
 <template>
   <v-sheet class="mx-auto">
-    <transaction-type @toggleDialog="handleToggleDialog" />
+    <transaction-type @toggleDialog="handleToggleDialog" :entries="entries" :types="types" :categories="categories" />
   </v-sheet>
-  <transaction-management-modal v-model="toggleDialog" title="Add transaction" subtitle="Record your expense or income"
-    @closed="handleDialogClosed" @saved="handleDialogSaved" />
+  <transaction-management-modal v-model:dialog="toggleDialog" v-model:entry="entry" title="Add transaction"
+    subtitle="Record your expense or income" @saved="handleDialogSaved" :types="types" :categories="categories"
+    :loading="isLoadingModal" />
 </template>

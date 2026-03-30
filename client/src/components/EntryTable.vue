@@ -1,63 +1,40 @@
 <script setup lang="ts">
-const desserts = [
-  {
-    name: 'Frozen Yogurt',
-    calories: 159,
-  },
-  {
-    name: 'Ice cream sandwich',
-    calories: 237,
-  },
-  {
-    name: 'Eclair',
-    calories: 262,
-  },
-  {
-    name: 'Cupcake',
-    calories: 305,
-  },
-  {
-    name: 'Gingerbread',
-    calories: 356,
-  },
-  {
-    name: 'Jelly bean',
-    calories: 375,
-  },
-  {
-    name: 'Lollipop',
-    calories: 392,
-  },
-  {
-    name: 'Honeycomb',
-    calories: 408,
-  },
-  {
-    name: 'Donut',
-    calories: 452,
-  },
-  {
-    name: 'KitKat',
-    calories: 518,
-  },
-]
+import type { Entry } from '@/types/types';
+
+
+const props = defineProps<{
+  entries: Entry[]
+}>()
+
 </script>
 <template>
   <v-table>
     <thead>
       <tr>
         <th class="text-left">
-          Name
+          Amount
         </th>
         <th class="text-left">
-          Calories
+          Date
+        </th>
+        <th class="text-left">
+          Description
+        </th>
+        <th class="text-left">
+          Category
+        </th>
+        <th class="text-left">
+          Type
         </th>
       </tr>
     </thead>
     <tbody>
-      <tr v-for="item in desserts" :key="item.name">
-        <td>{{ item.name }}</td>
-        <td>{{ item.calories }}</td>
+      <tr v-for="item in entries" :key="item.id">
+        <td>{{ item.amount }}</td>
+        <td>{{ item.date }}</td>
+        <td>{{ item.description }}</td>
+        <td>{{ item.category?.name }}</td>
+        <td>{{ item.type?.name }}</td>
       </tr>
     </tbody>
   </v-table>

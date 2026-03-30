@@ -11,5 +11,6 @@ create table Categories(Id integer primary key autoincrement, Name varchar(10), 
 insert into Categories(Name, Description) values('Food', 'Food expenses');
 insert into Categories(Name, Description) values('Rent', 'Rent');
 
-create table Entries(Id INTEGER primary key AUTOINCREMENT, Amount real, Date text, Description text, TypeId integer, foreign key(TypeId) references Types(Id));
-insert into Entries(Amount, Date, Description, TypeId) values(1, '2023-05-15T07:00:00Z', 'test insertion manuelle', 1);
+create table Entries(Id INTEGER primary key AUTOINCREMENT, Amount real, Date text, Description text, TypeId integer, CategoryId integer, foreign key(TypeId) references Types(Id), foreign key(CategoryId) references Categories(Id));
+insert into Entries(Amount, Date, Description, TypeId, CategoryId) values(1, '2023-05-15T07:00:00Z', 'test insertion manuelle', 1, 1);
+insert into Entries(Amount, Date, Description, TypeId, CategoryId) values(10, '2025-05-15T07:00:00Z', 'test insertion manuelle', 2, 2);

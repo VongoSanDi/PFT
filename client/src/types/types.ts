@@ -1,7 +1,9 @@
 export interface Entry {
   id: number,
   type: EntryType | null,
+  typeId: number,
   category: EntryCategory | null,
+  categoryId: number,
   amount: number,
   date: Date,
   description: string
