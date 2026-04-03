@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using server.Common;
 using server.Models;
 
 namespace server.Controllers;
@@ -9,10 +10,12 @@ namespace server.Controllers;
 public class EntriesController : ControllerBase
 {
     private readonly PftContext _context;
+    private readonly ILogger<EntriesController> _logger;
 
-    public EntriesController(PftContext context)
+    public EntriesController(PftContext context, ILogger<EntriesController> logger)
     {
         _context = context;
+        _logger = logger;
     }
 
     [HttpPost]
@@ -38,10 +41,37 @@ public class EntriesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Category>>> GetEntries()
+    public async Task<ActionResult<IEnumerable<Category>>> GetEntries(
+        [FromQuery] QueryFilter pagination
+    )
     {
-        var result = await _context.Entries.Select(x => MapModelToDto((x))).ToListAsync();
-        return Ok(result);
+        // Console.WriteLine("page", pagination);
+        _logger.LogInformation("page");
+        var query = _context.Entries.AsNoTracking().AsQueryable();
+
+        // TODO Apply search filter(filter by date, description ...)
+
+        // Count total items AFTER filtering but BEFORE pagination
+        var totalRecords = await query.CountAsync();
+
+        // TODO ApplySort
+
+        var entries = await _context
+            .Entries.ApplyPagination(pagination.PageNumber, pagination.PageSize)
+            .Select(x => MapModelToDto((x)))
+            .ToListAsync();
+
+        var paginatedResponse = new PaginatedResponse<Dto.Entry>
+        {
+            Data = entries,
+            Metadata = new PaginationMetadata(
+                pagination.PageNumber,
+                pagination.PageSize,
+                totalRecords
+            ),
+        };
+
+        return Ok(paginatedResponse);
     }
 
     private static Dto.Entry MapModelToDto(Models.Entry entry) =>
