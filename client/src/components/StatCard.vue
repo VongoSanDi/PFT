@@ -5,7 +5,6 @@ const props = defineProps<{
   title: string,
   loading: boolean,
   color?: string,
-  isLastEntryCard?: boolean
 }>()
 
 const titleTransformed = computed(() => {

@@ -4,12 +4,12 @@ import TransactionType from '@/components/TransactionType.vue'
 import { useCategories } from '@/composables/apis/useCategories'
 import { useEntries } from '@/composables/apis/useEntries'
 import { useTypes } from '@/composables/apis/useTypes'
-import type { CreateEntry, Entry } from '@/types/types'
-import { computed, onMounted, ref } from 'vue'
+import type { CreateEntry, DataTableOptions, Entry } from '@/types/types'
+import { computed, onMounted, ref, watch } from 'vue'
 
-const { create, fetchAll: loadEntries, entries } = useEntries();
-const { fetchAll: loadTypes, types, loading: loadingTypes } = useTypes()
+const { create, fetchAll: loadEntries, entries, loading: loadingEntries } = useEntries();
 const { fetchAll: loadCategories, categories, loading: loadingCategories } = useCategories()
+const { fetchAll: loadTypes, types: types, loading: loadingTypes } = useTypes()
 
 const toggleDialog = ref(false)
 
@@ -22,6 +22,13 @@ const entry = ref<Entry>({
   amount: 0,
   date: new Date(),
   description: ""
+})
+
+const tableOptions = ref<DataTableOptions>({
+  page: 1,
+  itemsPerPage: 10,
+  search: undefined,
+  sortBy: []
 })
 
 const handleToggleDialog = () => {
@@ -45,7 +52,7 @@ const handleDialogSaved = async () => {
   } catch (err) {
     console.error('err', err);
   } finally {
-    await loadEntries()
+    await fetchEntries()
     toggleDialog.value = false
   }
 }
@@ -53,17 +60,19 @@ const handleDialogSaved = async () => {
 onMounted(async () => {
   await Promise.all([loadTypes(), loadCategories(), fetchEntries()])
 
-  //
-  // if (types.value.length > 0) {
-  //   console.log('types', types.value)
-  //   entry.value.type = types.value[0]!
-  // }
+  // Par defaut on met que c'est une dépense vue que dans 99% des cas c'est le cas xD
+  if (types.value.length > 0) {
+    entry.value.type = types.value[0]!
+  }
 })
 
 const fetchEntries = async () => {
-  await loadEntries()
+  console.log('options', tableOptions.value)
+  await loadEntries(tableOptions.value)
+
+  // On map correctement les types/categories car on recois juste les ids de la db
   if (types.value.length > 0) {
-    entries.value = entries.value.map((e) => ({
+    entries.value.data = entries.value?.data.map((e) => ({
       ...e,
       type: types.value.find(t => t.id === e.typeId) ?? null,
       category: categories.value.find(c => c.id === e.categoryId) ?? null,
@@ -75,10 +84,16 @@ const isLoadingModal = computed(() => {
   return loadingTypes.value || loadingCategories.value
 })
 
+watch(tableOptions, async () => {
+  await fetchEntries()
+}, { deep: true }
+)
+
 </script>
 <template>
   <v-sheet class="mx-auto">
-    <transaction-type @toggleDialog="handleToggleDialog" :entries="entries" :types="types" :categories="categories" />
+    <transaction-type v-model:options="tableOptions" @toggleDialog="handleToggleDialog" :entries="entries"
+      :types="types" :categories="categories" :loading-entries="loadingEntries" />
   </v-sheet>
   <transaction-management-modal v-model:dialog="toggleDialog" v-model:entry="entry" title="Add transaction"
     subtitle="Record your expense or income" @saved="handleDialogSaved" :types="types" :categories="categories"

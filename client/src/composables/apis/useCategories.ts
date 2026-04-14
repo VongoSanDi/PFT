@@ -1,24 +1,24 @@
 import type { EntryCategory } from "@/types/types";
-import { useApi } from "./useApi";
-import { ref, shallowRef } from "vue";
+import { shallowRef } from "vue";
+import { useFetch } from "./useFetch";
 
 export function useCategories() {
-  const api = useApi<EntryCategory | EntryCategory[]>('api/categories')
-
+  const api = useFetch<EntryCategory | EntryCategory[]>()
   const categories = shallowRef<EntryCategory[]>([])
-  const loading = ref(false)
 
   const fetchAll = async () => {
-    loading.value = true
-    const { data, execute } = api.retrieve()
-    await execute()
-    categories.value = data.value ?? []
-    loading.value = false
+    const result = await api.execute("api/categories", {
+      method: 'GET',
+    })
+
+    categories.value = result ?? []
+    return categories.value
   }
 
   return {
-    fetchAll,
     categories,
-    loading
+    error: api.error,
+    loading: api.loading,
+    fetchAll,
   }
 }

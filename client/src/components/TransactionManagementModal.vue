@@ -11,7 +11,6 @@ const props = defineProps<{
   categories: EntryCategory[]
 }>()
 const emit = defineEmits(['saved'])
-console.log('e', entry)
 
 </script>
 <template>

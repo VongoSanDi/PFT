@@ -1,15 +1,17 @@
 <script setup lang="ts">
-import type { Entry, EntryCategory, EntryType } from '@/types/types';
+import type { DataTableOptions, Entry, EntryCategory, EntryType, PaginatedResponse } from '@/types/types';
 import { ref } from 'vue';
 import EntryTable from './EntryTable.vue';
 import StatCard from './StatCard.vue';
 import { mdiAccount } from '@mdi/js'
 
-const emit = defineEmits(['toggleDialog'])
+const emit = defineEmits(['toggleDialog', "update:options"])
 const props = defineProps<{
-  entries: Entry[],
+  entries: PaginatedResponse<Entry>,
+  loadingEntries: boolean,
   types: EntryType[],
-  categories: EntryCategory[]
+  categories: EntryCategory[],
+  options: DataTableOptions
 }>()
 
 const transactionType = ref("week")
@@ -45,7 +47,8 @@ const transactionType = ref("week")
               <v-icon :icon="mdiAccount"></v-icon>
             </v-btn>
           </template>
-          <entry-table :entries="entries" />
+          <entry-table :entries="entries" :loading="loadingEntries" :options="options"
+            @update:options="emit('update:options', $event)" />
         </v-card>
       </v-col>
     </v-row>

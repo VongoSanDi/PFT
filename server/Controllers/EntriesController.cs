@@ -27,7 +27,7 @@ public class EntriesController : ControllerBase
         return CreatedAtAction(nameof(GetEntry), new { id = entry.Id }, entry);
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("{id:int}")]
     public async Task<ActionResult<Entry>> GetEntry(int id)
     {
         var entry = await _context.Entries.FindAsync(id);
@@ -45,8 +45,6 @@ public class EntriesController : ControllerBase
         [FromQuery] QueryFilter pagination
     )
     {
-        // Console.WriteLine("page", pagination);
-        _logger.LogInformation("page");
         var query = _context.Entries.AsNoTracking().AsQueryable();
 
         // TODO Apply search filter(filter by date, description ...)
