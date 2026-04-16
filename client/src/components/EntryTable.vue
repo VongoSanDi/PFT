@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { DataTableOptions, Entry, PaginatedResponse } from '@/types/types';
+import { formatEntryDate } from '@/utils/formatting';
 import { ref } from 'vue';
 
 const props = defineProps<{
@@ -43,6 +44,9 @@ const itemsPerPageOptions = ref([
 <template>
   <v-data-table-server :options="options" @update:options="$emit('update:options', $event)" :headers="headers"
     :items="entries.data" :items-length="entries.metadata.totalRecords" :page="entries.metadata.pageNumber"
-    :loading="loading" item-value="id" :items-per-page-options="itemsPerPageOptions" return-object
-    show-current-page></v-data-table-server>
+    :loading="loading" item-value="id" :items-per-page-options="itemsPerPageOptions" return-object show-current-page>
+    <template v-slot:item.date="{ value }">
+      {{ formatEntryDate(value) }}
+    </template>
+  </v-data-table-server>
 </template>

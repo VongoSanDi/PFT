@@ -42,37 +42,47 @@ public class EntriesController : ControllerBase
 
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Category>>> GetEntries(
-        [FromQuery] QueryFilter pagination
+        [FromQuery] QueryFilter filter
     )
     {
         var query = _context.Entries.AsNoTracking().AsQueryable();
 
         // TODO Apply search filter(filter by date, description ...)
+        // if (!String.IsNullOrWhiteSpace(filter.OverviewPeriod))
+        // {
+        //     DateTime firstDayOfWeek = DateTime.UtcNow;
+        //     DateTime lastDayOfWeek = DateTime.UtcNow;
+        //
+        //     if (filter.OverviewPeriod == "week")
+        //     {
+        //         DateTime date = DateTime.UtcNow;
+        //         int diff = ((int)date.DayOfWeek - (int)DayOfWeek.Monday + 7) % 7;
+        //         firstDayOfWeek = date.Date.AddDays(-diff);
+        //         lastDayOfWeek = firstDayOfWeek.AddDays(6);
+        //     }
+        //     query = query.Where(op => op.Date >= firstDayOfWeek && op.Date < lastDayOfWeek);
+        // }
 
-        // Count total items AFTER filtering but BEFORE pagination
+        // Count total items AFTER filtering but BEFORE filter
         var totalRecords = await query.CountAsync();
 
         // TODO ApplySort
 
-        var entries = await _context
-            .Entries.ApplyPagination(pagination.PageNumber, pagination.PageSize)
+        var entries = await query
+            .ApplyPagination(filter.PageNumber, filter.PageSize)
             .Select(x => MapModelToDto((x)))
             .ToListAsync();
 
         var paginatedResponse = new PaginatedResponse<Dto.Entry>
         {
             Data = entries,
-            Metadata = new PaginationMetadata(
-                pagination.PageNumber,
-                pagination.PageSize,
-                totalRecords
-            ),
+            Metadata = new PaginationMetadata(filter.PageNumber, filter.PageSize, totalRecords),
         };
 
         return Ok(paginatedResponse);
     }
 
-    private static Dto.Entry MapModelToDto(Models.Entry entry) =>
+    private static Dto.Entry MapModelToDto(Entry entry) =>
         new Dto.Entry
         {
             Id = entry.Id,

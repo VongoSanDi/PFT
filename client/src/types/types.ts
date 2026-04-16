@@ -54,3 +54,7 @@ export interface DataTableOptions {
   sortBy: unknown[],
   search: undefined
 }
+
+export interface EntriesParams extends DataTableOptions {
+  period: string
+}

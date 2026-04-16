@@ -1,4 +1,4 @@
-import type { CreateEntry, DataTableOptions, Entry, PaginatedResponse } from "@/types/types";
+import type { CreateEntry, EntriesParams, Entry, PaginatedResponse } from "@/types/types";
 import { shallowRef } from "vue";
 import { useFetch } from "./useFetch";
 
@@ -17,15 +17,13 @@ export function useEntries() {
     }
   })
 
-  const fetchAll = async (pagination: DataTableOptions) => {
-    console.log('fetchAllEntries', pagination);
+  const fetchAll = async (params: EntriesParams) => {
+    console.log('fetchAllEntries', params);
 
-    const paramsObj = { pageNumber: `${pagination.page}`, pageSize: `${pagination.itemsPerPage}` }
-    const params = new URLSearchParams(paramsObj);
+    const paramsObj = { pageNumber: `${params.page}`, pageSize: `${params.itemsPerPage}`, period: `${params.period}` }
+    const searchParams = new URLSearchParams(paramsObj);
 
-    const endpoint = `api/entries?${params}`
-    console.log('e', endpoint);
-
+    const endpoint = `api/entries?${searchParams}`
 
     const result = await api.execute(endpoint, {
       method: 'GET',

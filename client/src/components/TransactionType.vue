@@ -1,20 +1,19 @@
 <script setup lang="ts">
 import type { DataTableOptions, Entry, EntryCategory, EntryType, PaginatedResponse } from '@/types/types';
-import { ref } from 'vue';
 import EntryTable from './EntryTable.vue';
 import StatCard from './StatCard.vue';
-import { mdiAccount } from '@mdi/js'
+import { mdiPlus } from '@mdi/js'
 
-const emit = defineEmits(['toggleDialog', "update:options"])
+const emit = defineEmits(['toggleDialog', "update:options", "update:overviewPeriod"])
 const props = defineProps<{
   entries: PaginatedResponse<Entry>,
   loadingEntries: boolean,
   types: EntryType[],
   categories: EntryCategory[],
-  options: DataTableOptions
+  options: DataTableOptions,
+  overviewPeriod: string
 }>()
 
-const transactionType = ref("week")
 </script>
 <template>
   <v-container>
@@ -23,7 +22,8 @@ const transactionType = ref("week")
         <div>Overview period</div>
       </v-col>
       <v-col>
-        <v-btn-toggle v-model="transactionType" color="primary" mandatory>
+        <v-btn-toggle :model-value="overviewPeriod" @update:modelValue="emit('update:overviewPeriod', $event)"
+          color="primary" mandatory>
           <v-btn value="week">Week</v-btn>
           <v-btn value="month">Month</v-btn>
           <v-btn value="year">Year</v-btn>
@@ -44,7 +44,7 @@ const transactionType = ref("week")
         <v-card>
           <template #append>
             <v-btn @click="emit('toggleDialog')">
-              <v-icon :icon="mdiAccount"></v-icon>
+              <v-icon :icon="mdiPlus"></v-icon>
             </v-btn>
           </template>
           <entry-table :entries="entries" :loading="loadingEntries" :options="options"
